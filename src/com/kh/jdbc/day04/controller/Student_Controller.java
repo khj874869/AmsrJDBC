@@ -1,47 +1,54 @@
-package com.kh.jdbc.day01.student.controller;
+package com.kh.jdbc.day04.controller;
 
+import java.sql.Date;
 import java.util.List;
 
-import com.kh.jdbc.day01.student.model.dao.StudentDAO;
-import com.kh.jdbc.day01.student.model.vo.Student;
+import com.kh.jdbc.day04.model.dao.StudentDAO;
+import com.kh.jdbc.day04.model.service.StudentService;
+import com.kh.jdbc.day04.model.vo.Student;
+
 
 public class StudentController {
-	
-	private StudentDAO studentDao;
+	private StudentService sService;
 	
 	public StudentController() {
-		studentDao = new StudentDAO();
+		sService = new StudentService();
 	}
 
-	public List<Student> printStudentList() {
-		List<Student> sList = studentDao.selectAll(); 
+	public List<Student> selectAll() {
+		List<Student> sList = sService.selectAll();
 		return sList;
 	}
 
-	public List<Student> printStudentsByName(String studentName) {
-		List<Student> sList = studentDao.selectAllByName(studentName);
-		return sList;
-	}
-
-	public Student printStudentById(String studentId) {
-		Student student = studentDao.selectOneById(studentId);
+	public Student selectOneById(String studentId) {
+		Student student = sService.selectOneById(studentId);
 		return student;
 	}
 
+	public List<Student> selectAllByName(String studentName) {
+		List<Student> sList = sService.selectAllByName(studentName);
+		return sList;
+	}
+
 	public int insertStudent(Student student) {
-		int result = studentDao.insertStudent(student);
+		int result = sService.insertStudent(student);
 		return result;
 	}
 
-	public int modifyStudent(Student student) {
-		int result = studentDao.updateStudent(student);
+	public int updateStudent(Student student) {
+		int result = sService.updateStudent(student);
 		return result;
 	}
 
 	public int deleteStudent(String studentId) {
-		int result = studentDao.deleteStudent(studentId);
+		int result = sService.deleteStudent(studentId);
 		return result;
 	}
 
 }
+
+
+
+
+
 
