@@ -1,39 +1,187 @@
-package com.kh.jdbc.day04.model.dao;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+package com.kh.jdbc.day01.student.model.dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import com.kh.jdbc.day04.common.JDBCTemplate;
-import com.kh.jdbc.day04.model.vo.StudentVo;
+import com.kh.jdbc.day01.student.model.vo.Student;
 
-public class Student_DAO {
-	private Properties prop;
-	/*
-	 * 1.Checked Exception 과 Unchecked Exception
-	 * 2. 예외의 종류 Throwable - Exception(checked exception한정)
-	 * 3. 예외처리 처리 방법 : throws, try~catch
-	 */
-	public Student_DAO(){
-		prop = new Properties();
-		Reader reader;
+public class StudentDAO {
+	private final String DRIVER_NAME = "oracle.jdbc.driver.OracleDriver";
+	private final String URL = "jdbc:oracle:thin:@localhost:1521:XE";
+	private final String USER = "STUDENT";
+	private final String PASSWORD = "STUDENT";
+
+	public List<Student> selectAll() {
+		/*
+		 * 1. 드라이버 등록
+		 * 2. DB 연결 생성
+		 * 3. 쿼리문 실행 준비
+		 * 4. 쿼리문 실행 및 5. 결과 받기
+		 * 6. 자원해제(close())
+		 */
+		String query = "SELECT * FROM STUDENT_TBL";
+		List<Student> sList = null;
+		Student student = null;
 		try {
-			reader = new FileReader("resources/query.properties");
-			prop.load(reader);
-		} catch (IOException e) {
+			// 1. 드라이버 등록
+			Class.forName(DRIVER_NAME);
+			// 2. DB 연결 생성(DriverManger)
+			Connection conn = 
+					DriverManager.getConnection(URL, USER, PASSWORD);
+			// 3.쿼리문 실행 준비
+			Statement stmt = 
+					conn.createStatement();
+			// 4. 쿼리문 실행 및 5. 결과 받기
+			ResultSet rset = 
+					stmt.executeQuery(query);
+			sList = new ArrayList<Student>();
+			// 후처리
+			while(rset.next()) {
+				student = rsetToStudent(rset);
+				sList.add(student);
+			}
+			// 6. 자원해제
+			rset.close();
+			stmt.close();
+			conn.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+		return sList;
 	}
-	private JDBCTemplate jdbctemplate;
-	List<StudentVo>sList =null;
-	private StudentVo rsetToStudent(ResultSet rset) throws SQLException {
-		StudentVo student = new StudentVo();
+
+	public List<Student> selectAllByName(String studentName) {
+		String query = "SELECT * FROM STUDENT_TBL WHERE STUDENT_NAME ='"+studentName +"'";
+		List<Student> sList = new ArrayList<Student>();
+		Student student = null;
+		try {
+			Class.forName(DRIVER_NAME);
+			Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+			Statement stmt = conn.createStatement();
+			ResultSet rset = stmt.executeQuery(query);
+			// 후처리
+			while(rset.next()) {
+				student = rsetToStudent(rset);
+				sList.add(student);
+			}
+			rset.close();
+			stmt.close();
+			conn.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return sList;
+	}
+
+	public Student selectOneById(String studentId) {
+						// SELECT * FROM STUDENT_TBL WHERE STUDENT_ID = 'khuser01'
+		String query = "SELECT * FROM STUDENT_TBL WHERE STUDENT_ID ='"+studentId +"'";
+		Student student = null;
+		try {
+			Class.forName(DRIVER_NAME);
+			Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+			Statement stmt = conn.createStatement();
+			ResultSet rset = stmt.executeQuery(query);
+//			while(rset.next()) {}
+			if(rset.next()) {
+				student = rsetToStudent(rset);
+			}
+			rset.close();
+			stmt.close();
+			conn.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return student;
+	}
+
+	public int insertStudent(Student student) {
+			/*
+			 * 1. 드라이버 등록
+			 * 2. DB 연결 생성
+			 * 3. 쿼리문 실행 준비
+			 * 4. 쿼리문 실행 및 5. 결과 받기
+			 * 6. 자원해제
+			 * 
+			 */
+			//INSERT INTO STUDENT_TBL VALUES('khuser01', 'pass01', '일용자', 'M', 11, 'khuser01@kh.com', '01082829222' , '서울시 중구 남대문로 120', '독서,수영', SYSDATE)
+			String query = "INSERT INTO STUDENT_TBL VALUES('"+student.getStudentId()+"', '"+student.getStudentPwd()+"', '"+student.getStudentName()+"', '"+student.getGender()+"', "+student.getAge()+", '"+student.getEmail()+"', '"+student.getPhone()+"' , '"+student.getAddress()+"', '"+student.getHobby()+"', SYSDATE)";
+			int result = -1;
+			try {
+				// 1. 드라이버 등록
+				Class.forName(DRIVER_NAME);
+				// 2. 디비 연결 생성
+				Connection conn = 
+						DriverManager.getConnection(URL, USER, PASSWORD);
+				// 3. 쿼리 실행 준비
+				Statement stmt = conn.createStatement();
+				// 4. 실행하고 5. 결과받기
+	//			stmt.executeQuery(query);	// SELECT용
+				result = stmt.executeUpdate(query);	// DML(INSERT, UPDATE, DELETE)
+				stmt.close();
+				conn.close();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+	public int updateStudent(Student student) {
+	//		UPDATE STUDENT_TBL 
+	//		SET STUDENT_PWD = 'pass11', EMAIL = 'khuser01@iei.or.kr', PHONE = '01092920303'
+	//		, ADDRESS = '서울시 강남구', HOBBY = '코딩,수영' WHERE STUDENT_ID = 'khuser01';		
+			String query = "UPDATE STUDENT_TBL SET "
+					+ "STUDENT_PWD = '"+student.getStudentPwd()+"', "
+							+ "EMAIL = '"+student.getEmail()+"', "
+									+ "PHONE = '"+student.getPhone()+"', "
+											+ "ADDRESS = '"+student.getAddress()+"', "
+													+ "HOBBY = '"+student.getHobby()+"' "
+															+ "WHERE STUDENT_ID = '"+student.getStudentId()+"'";
+			int result = -1;
+			try {
+				Class.forName(DRIVER_NAME);
+				Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+				Statement stmt = conn.createStatement();
+				result = stmt.executeUpdate(query);
+				stmt.close();
+				conn.close();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+	public int deleteStudent(String studentId) {
+						// DELETE FROM STUDENT_TBL WHERE STUDENT_ID = 'khuser01'
+		String query = "DELETE FROM STUDENT_TBL WHERE STUDENT_ID ='" + studentId +"'";
+		int result = -1;
+		try {
+			Class.forName(DRIVER_NAME);
+			Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+			Statement stmt = conn.createStatement();
+			result = stmt.executeUpdate(query);
+			stmt.close();
+			conn.close();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	private Student rsetToStudent(ResultSet rset) throws SQLException {
+		Student student = new Student();
 		student.setStudentId(rset.getString("STUDENT_ID"));
 		student.setStudentPwd(rset.getString("STUDENT_PWD"));
 		student.setStudentName(rset.getString("STUDENT_NAME"));
@@ -47,189 +195,5 @@ public class Student_DAO {
 		student.setEnrollDate(rset.getDate("ENROLL_DATE"));
 		return student;
 	}
-	public List<StudentVo> selectAll() {
-		Connection conn = null;
-		Statement stmt = null;
-		ResultSet rset = null;
-		String query = prop.getProperty("selectAll");
-		sList = new ArrayList<StudentVo>();
-		try {
-			conn = jdbctemplate.createConnection();
-			stmt = conn.createStatement();
-			rset = stmt.executeQuery(query);
-			while(rset.next()) {
-				StudentVo student = rsetToStudent(rset);
-				sList.add(student);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally {
-			try {
-				rset.close();
-				stmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			
-		}
-		return sList;
-	}
-	public StudentVo selectOneById(String msg) {
-		String query =prop.getProperty("selectOneById");; //위치 홀더
-		Connection conn =null;
-		PreparedStatement pstmt=null;
-		ResultSet rset =null;
-		StudentVo student = null;
-		try {
-			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1,msg);
-			rset = pstmt.executeQuery();
-			// 후처리
-			while(rset.next()) {
-				student = rsetToStudent(rset);
-				sList.add(student);
-			}
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally {
-			try {
-				rset.close();
-				pstmt.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return student;
 }
-	public List<StudentVo> inputStudentName(String stdname) {
-		String query = prop.getProperty("inputStudentName"); //위치 홀더
-		Connection conn =null;
-		PreparedStatement pstmt=null;
-		ResultSet rset =null;
-		StudentVo student = null;
-		try {
-			conn = jdbctemplate.createConnection();
-			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1,stdname);
-			rset = pstmt.executeQuery();
-			// 후처리
-			while(rset.next()) {
-				student = rsetToStudent(rset);
-				sList.add(student);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally {
-			try {
-				rset.close();
-				pstmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-	}
-		return sList;
-}
-	public int inputStudent(StudentVo student) {
-		String query = prop.getProperty("inputStudent");
-		Connection conn =null;
-		PreparedStatement pstmt =null;
-		int result = -1;
-		try {
-			conn = jdbctemplate.createConnection();
-			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, student.getStudentId());
-			pstmt.setString(2, student.getStudentPwd());
-			pstmt.setString(3, student.getStudentName());
-			pstmt.setString(4, String.valueOf(student.getGender()));
-			pstmt.setInt(5, student.getAge());
-			pstmt.setString(6, student.getEmail());
-			pstmt.setString(7, student.getPhone());
-			pstmt.setString(8, student.getAddress());
-			pstmt.setString(9, student.getHobby());
-			result = pstmt.executeUpdate();
-		}  catch (SQLException e) {
-			e.printStackTrace();
-		}finally {
-			try {
-				pstmt.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-		return result;	
-	}
-	public int Updateinfo(StudentVo student) {
 
-		String query = prop.getProperty("Updateinfo");
-		int result = -1;
-		Connection conn =null;
-		PreparedStatement pstmt =null;
-		try {
-			conn = jdbctemplate.createConnection();
-			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, student.getStudentPwd());
-			pstmt.setString(2, student.getEmail());
-			pstmt.setString(3, student.getPhone());
-			pstmt.setString(4, student.getAddress());
-			pstmt.setString(5, student.getHobby());
-			pstmt.setString(6, student.getStudentId());
-			result = pstmt.executeUpdate();
-		}  catch (SQLException e) {
-			e.printStackTrace();
-		}finally {
-			try {
-				pstmt.close();
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			
-		}
-		return result;		
-	}
-	public int delete(String id) {
-		String query =  prop.getProperty("delete");
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		int result = -1;
-		try {
-			conn =jdbctemplate.createConnection();
-			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, id);
-			result = pstmt.executeUpdate();
-		
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally {
-			try {
-				pstmt.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return result;
-	}
-}
-/*
- * 1. Statement
- * - createStatement() 메소드를 통해서 객체 생성
- * - execute*()를 실행할 때 쿼리문이 필요함
- * - 쿼리문을 별도로 컴파일 하지 않아서 단순 실행일 경우 빠름
- * - ex) 전체정보조회
- * 
- * 2. PreparedStatement
- * - Statement를 상속받아서 만들어진 인터페이스
- * - prepareStatement() 메소들를 통해서 객체 생성하는데 이때 쿼리문 필요
- * - 쿼리문을 미리 컴파일하여 캐싱한 후 재사용하는 구조
- * - 쿼리문을 컴파일 할때 위치홀더(?)를 이용하여 값이 들어가는 부분을 표시한 후 쿼리문 실행전에
- * 값을 셋팅해주어야함.
- * - 컴파일 하는 과정이 있어 느릴 수 있지만 쿼리문을 반복해서 실행할 때는 속도가 빠름
- * - 전달값이 있는 쿼리문에 대해서 SqlInjection을 방어할 수 있는 보안기능이 추가됨
- * - ex) 아이디로 정보조회, 이름으로 정보조회
- * 
- */
