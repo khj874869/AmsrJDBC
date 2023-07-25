@@ -1,51 +1,47 @@
-package com.kh.jdbc.day04.controller;
+package com.kh.jdbc.day01.student.controller;
 
-import java.sql.Date;
 import java.util.List;
 
-import com.kh.jdbc.day04.model.dao.Student_DAO;
-import com.kh.jdbc.day04.model.service.StudentService;
-import com.kh.jdbc.day04.model.vo.StudentVo;
+import com.kh.jdbc.day01.student.model.dao.StudentDAO;
+import com.kh.jdbc.day01.student.model.vo.Student;
 
-public class Student_Controller {
-	private Student_DAO sDao;
-	private StudentService sservice;
-	public Student_Controller() {
-		sDao = new Student_DAO();
-	}
+public class StudentController {
 	
-	public List<StudentVo> selectAll() {
-		List<StudentVo>sList = sservice.selectAll();
+	private StudentDAO studentDao;
+	
+	public StudentController() {
+		studentDao = new StudentDAO();
+	}
+
+	public List<Student> printStudentList() {
+		List<Student> sList = studentDao.selectAll(); 
 		return sList;
 	}
 
-	public StudentVo selectOneById(String studentId) {
-		StudentVo student = sservice.selectOneById(studentId);
+	public List<Student> printStudentsByName(String studentName) {
+		List<Student> sList = studentDao.selectAllByName(studentName);
+		return sList;
+	}
+
+	public Student printStudentById(String studentId) {
+		Student student = studentDao.selectOneById(studentId);
 		return student;
 	}
 
-	public List<StudentVo> inputStudentName(String stdname) {
-		List<StudentVo> sList = sservice.inputStudentName(stdname);
-		
-		
-		return sList;
-		
-		
-
-	}
-
-	public int inputStudent(StudentVo student) {
-		int result = sservice.inputStudent(student); 
+	public int insertStudent(Student student) {
+		int result = studentDao.insertStudent(student);
 		return result;
 	}
 
-	public int Updateinfo(StudentVo student) {
-		int result =  sservice.Updateinfo(student);
-		return result ;
-	}
-
-	public int delete(String id) {
-		int result = sservice.delete(id);
+	public int modifyStudent(Student student) {
+		int result = studentDao.updateStudent(student);
 		return result;
 	}
+
+	public int deleteStudent(String studentId) {
+		int result = studentDao.deleteStudent(studentId);
+		return result;
+	}
+
 }
+
