@@ -5,9 +5,11 @@ import java.util.List;
 
 import com.kh.jdbc.day03.model.dao.StudentDao;
 import com.kh.jdbc.day03.model.vo.StudentVo;
+import com.kh.jdbc.day04.model.service.StudentService;
 
 public class StudentController {
 	private StudentDao dao;
+	private StudentService sservice;
  public	StudentController(){
 		dao = new StudentDao();
 	}

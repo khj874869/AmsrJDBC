@@ -1,12 +1,19 @@
 package com.kh.jdbc.day04.common;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.*;
+import java.util.Properties;
 
 public class JDBCTemplate {
-	private final String DRIVER_NAME = "oracle:jdbc:driver:OracleDriver";
-	private final String URL = "jdbc:oracle:thin:@localhost:127.0.0.1:1521:XE";
-	private final String USER = "STUDENT";
-	private final String PASSWORD = "STUDENT";
+	
+	private Properties prop;
+
+	
+	
+
 	private static JDBCTemplate instance;
 	private static Connection conn;
 	private JDBCTemplate() {
@@ -42,18 +49,47 @@ public class JDBCTemplate {
 	}
 	public Connection createConnection() {
 		try {
-			if(conn ==null || conn.isClosed()) {
-				Class.forName(DRIVER_NAME);
-				conn = DriverManager.getConnection(URL,USER,PASSWORD);
-			}
+			prop = new Properties();
+			Reader reader = new FileReader("resources/dev.properties");
+			prop.load(reader);
+			String driverName = prop.getProperty("driverName");
+			String url = prop.getProperty("url");
+			String user = prop.getProperty("user");
+			String password = prop.getProperty("password");
+			
+				if(conn ==null || conn.isClosed()) {
+					Class.forName(driverName);
+					conn = DriverManager.getConnection(url,user,password);
+					conn.setAutoCommit(false); //Auto Commit 해제
+		}} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 			 //DBCP(DataBase Connection pool)
-		} catch (ClassNotFoundException e) {
+		 catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	return conn;	
 	}
+	public static void commit(Connection conn) {
+		try {
+			conn.commit();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public static void rollback(Connection conn) {
+		try {
+			if(conn !=null && !conn.isClosed())conn.rollback();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void close() {
 		if(conn!=null) {
 			try {

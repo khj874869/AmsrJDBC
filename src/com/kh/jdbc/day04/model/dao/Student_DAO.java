@@ -1,17 +1,35 @@
 package com.kh.jdbc.day04.model.dao;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import com.kh.jdbc.day04.common.JDBCTemplate;
 import com.kh.jdbc.day04.model.vo.StudentVo;
 
 public class Student_DAO {
-	private final String DRIVER_NAME = "oracle:jdbc:driver:OracleDriver";
-	private final String URL = "jdbc:oracle:thin:@localhost:127.0.0.1:1521:XE";
-	private final String USER = "STUDENT";
-	private final String PASSWORD = "STUDENT";
+	private Properties prop;
+	/*
+	 * 1.Checked Exception 과 Unchecked Exception
+	 * 2. 예외의 종류 Throwable - Exception(checked exception한정)
+	 * 3. 예외처리 처리 방법 : throws, try~catch
+	 */
+	public Student_DAO(){
+		prop = new Properties();
+		Reader reader;
+		try {
+			reader = new FileReader("resources/query.properties");
+			prop.load(reader);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
 	private JDBCTemplate jdbctemplate;
 	List<StudentVo>sList =null;
 	private StudentVo rsetToStudent(ResultSet rset) throws SQLException {
@@ -33,7 +51,7 @@ public class Student_DAO {
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rset = null;
-		String query = "SELECT * FROM STUDENT_TBL";
+		String query = prop.getProperty("selectAll");
 		sList = new ArrayList<StudentVo>();
 		try {
 			conn = jdbctemplate.createConnection();
@@ -49,7 +67,6 @@ public class Student_DAO {
 			try {
 				rset.close();
 				stmt.close();
-				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -58,7 +75,7 @@ public class Student_DAO {
 		return sList;
 	}
 	public StudentVo selectOneById(String msg) {
-		String query = "SELECT * FROM STUDENT_TBL WHERE STUDENT_NAME =?"; //위치 홀더
+		String query =prop.getProperty("selectOneById");; //위치 홀더
 		Connection conn =null;
 		PreparedStatement pstmt=null;
 		ResultSet rset =null;
@@ -79,7 +96,6 @@ public class Student_DAO {
 			try {
 				rset.close();
 				pstmt.close();
-				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -88,7 +104,7 @@ public class Student_DAO {
 		return student;
 }
 	public List<StudentVo> inputStudentName(String stdname) {
-		String query = "SELECT * FROM STUDENT_TBL WHERE STUDENT_NAME=?"; //위치 홀더
+		String query = prop.getProperty("inputStudentName"); //위치 홀더
 		Connection conn =null;
 		PreparedStatement pstmt=null;
 		ResultSet rset =null;
@@ -109,7 +125,6 @@ public class Student_DAO {
 			try {
 				rset.close();
 				pstmt.close();
-				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -117,7 +132,7 @@ public class Student_DAO {
 		return sList;
 }
 	public int inputStudent(StudentVo student) {
-		String query = "INSERT INTO STUDENT_TBL VALUES(?,?,?,?,?,?,?,?,?,SYSDATE)";
+		String query = prop.getProperty("inputStudent");
 		Connection conn =null;
 		PreparedStatement pstmt =null;
 		int result = -1;
@@ -139,7 +154,6 @@ public class Student_DAO {
 		}finally {
 			try {
 				pstmt.close();
-				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -150,7 +164,7 @@ public class Student_DAO {
 	}
 	public int Updateinfo(StudentVo student) {
 
-		String query = "Update STUDENT_TBL set STUDENT_PWD = ?,EMAIL = ? ,PHONE = ? ,ADDRESS = ?,HOBBY = ? WHERE STUDENT_ID = ?";
+		String query = prop.getProperty("Updateinfo");
 		int result = -1;
 		Connection conn =null;
 		PreparedStatement pstmt =null;
@@ -178,7 +192,7 @@ public class Student_DAO {
 		return result;		
 	}
 	public int delete(String id) {
-		String query = "DELETE  FROM STUDENT_TBL WHERE STUDENT_ID  = ?";
+		String query =  prop.getProperty("delete");
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		int result = -1;
@@ -193,7 +207,6 @@ public class Student_DAO {
 		}finally {
 			try {
 				pstmt.close();
-				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
