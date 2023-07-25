@@ -4,79 +4,81 @@ import java.sql.*;
 import java.util.List;
 
 import com.kh.jdbc.day04.common.JDBCTemplate;
-import com.kh.jdbc.day04.model.dao.Student_DAO;
-import com.kh.jdbc.day04.model.vo.StudentVo;
+import com.kh.jdbc.day04.model.dao.StudentDAO;
+import com.kh.jdbc.day04.model.vo.Student;
 
 public class StudentService {
-	private Student_DAO sDao;
-	private JDBCTemplate jdbctemplate;
-	public StudentService() {
-		sDao = new Student_DAO();
-//		jdbctemplate= new JDBCTemplate(); //생성자가 private이기 때문에 사용못한다
-		jdbctemplate= JDBCTemplate.getinstance();
-	}
-	public List<StudentVo> selectAll() {
-		Connection conn =
-				jdbctemplate.createConnection();
-		List<StudentVo> sList 
-		= sDao.selectAll();
-		jdbctemplate.close();
+	private StudentDAO sDao;
+	private JDBCTemplate jdbcTemplate;
 
+	public StudentService() {
+		sDao = new StudentDAO();
+//		jdbcTemplate = new JDBCTemplate(); // 생성자가 private이기 때문에 사용 못함!
+		jdbcTemplate = JDBCTemplate.getInstance();
+	}
+
+	public List<Student> selectAll() {
+		List<Student> sList = null;
+		try {
+			Connection conn = jdbcTemplate.createConnection();
+			sList = sDao.selectAll(conn);
+			jdbcTemplate.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return sList;
 	}
-	public StudentVo selectOneById(String studentId) {
-		Connection conn =
-				jdbctemplate.createConnection();
-		StudentVo student =
-				sDao.selectOneById(studentId);
-		jdbctemplate.close();
 
+	public Student selectOneById(String studentId) {
+		Connection conn = jdbcTemplate.createConnection();
+		Student student = sDao.selectOneById(conn, studentId);
+		jdbcTemplate.close();
 		return student;
 	}
-	public List<StudentVo> inputStudentName(String stdname) {
-		Connection conn =
-				jdbctemplate.createConnection();
-		List<StudentVo>sList = sDao.inputStudentName(stdname);
-		jdbctemplate.close();
+
+	public List<Student> selectAllByName(String studentName) {
+		Connection conn = jdbcTemplate.createConnection();
+		List<Student> sList = sDao.selectAllByName(conn, studentName);
+		jdbcTemplate.close();
 		return sList;
 	}
-	public int inputStudent(StudentVo student) {
-		Connection conn =
-				jdbctemplate.createConnection();
-		int result =sDao.inputStudent(student);
-		result +=sDao.inputStudent(student);
-		if(result>1) {
-			JDBCTemplate.commit(conn);
-		}else {
-			JDBCTemplate.rollback(conn);
-		}
-		jdbctemplate.close();
 
-		return result;
-	}
-	public int Updateinfo(StudentVo student) {
-		Connection conn =
-				jdbctemplate.createConnection();
-		int result = sDao.Updateinfo(student);
-		if(result>0) {
+	public int insertStudent(Student student) {
+		Connection conn = jdbcTemplate.createConnection();
+		int result = sDao.insertStudent(conn, student);
+		result += sDao.updateStudent(conn, student);
+		
+		if(result > 1) {
 			JDBCTemplate.commit(conn);
 		}else {
 			JDBCTemplate.rollback(conn);
 		}
-		jdbctemplate.close();
+		jdbcTemplate.close();
 		return result;
 	}
-	public int delete(String id) {
-		Connection conn =
-				jdbctemplate.createConnection();
-		int result = 
-				sDao.delete(id);
-		if(result>0) {
+
+	public int updateStudent(Student student) {
+		Connection conn = jdbcTemplate.createConnection();
+		int result = sDao.updateStudent(conn, student);
+		if(result > 0) {
 			JDBCTemplate.commit(conn);
 		}else {
 			JDBCTemplate.rollback(conn);
 		}
-		jdbctemplate.close();
+		jdbcTemplate.close();
+		return result;
+	}
+
+	public int deleteStudent(String studentId) {
+		Connection conn = jdbcTemplate.createConnection();
+		int result = sDao.deleteStudent(conn, studentId);
+		if(result > 0) {
+			JDBCTemplate.commit(conn);
+		}else {
+			JDBCTemplate.rollback(conn);
+		}
+		jdbcTemplate.close();
 		return result;
 	}
 }
